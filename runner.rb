@@ -1,46 +1,47 @@
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/lib'
 require 'player.rb'
 
-playlist = [ '01.mp3', '02.mp3', '03.mp3', '04.mp3' ]
 
 p = Player.new
-p.change_track "../tracks/01.mp3"
+p.playlist = [ '../tracks/01.mp3', '../tracks/02.mp3', '../tracks/03.mp3' ]
+p.change_track 0
+
+p.play
+
+sleep(5)
+
+p.next!
+
+sleep(5)
+
+p.pause
+
+puts 'PAUSED'
+
+p.next!
+
+puts "SHOULD STILL BE PAUSED"
+sleep(3)
+
 p.play
 
 puts "NOW PLAYING"
 
-sleep(2)
+sleep(5)
 
-puts p.status
+p.prev!
 
-p.pause
-
-puts p.status
-
-sleep(3)
-
-puts p.pause
-
-puts p.status
-
-sleep(2)
-
-puts p.status
-
-p.pause
-
-puts p.status
-
-sleep(2)
-
-p.play
-
-puts p.status
+puts "SHOULD BE BACK TO PREVIPOS TRACK"
 
 sleep(10)
 
 p.stop
 
+
 puts "STOPPED PLAYING"
+
+sleep(3)
+
+puts "NOW ENDING"
 
 puts p.metadata.inspect

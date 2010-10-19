@@ -10,30 +10,41 @@ class Player
   @metadata = {}
   @status = NOT_STARTED
   
-  attr_reader :metadata, :error, :status
+  @playlist = []
+  @current = nil
+  
+  attr_reader :metadata, :error, :status, :current
+  attr_accessor :playlist
   
   def initialize(filename = nil)
     change_track filename if filename
   end
   
-  def change_track(filename)
+  def change_track(playlist_item)
+    return false unless playlist_item >= 0 and playlist_item < @playlist.length
+    
     @error = nil
     @metadata = {}
+    @current = playlist_item
     
     @pipeline = Gst::Pipeline.new
     playbin = Gst::ElementFactory.make('playbin')
-    playbin.uri = "file://#{File.expand_path(filename)}"
+    playbin.uri = "file://#{File.expand_path(@playlist[@current])}"
     @pipeline.add playbin
     
     @pipeline.bus.add_watch do |bus, message|
       case message.type
       when Gst::Message::EOS
-        @loop.quit
-        @pipeline.stop
+        if @current < @playlist.length - 1
+          @pipeline.stop
+          change_track @current + 1
+          @pipeline.play
+        else
+          stop
+        end
       when Gst::Message::ERROR
         @error = message.parse
-        @loop.quit
-        @pipeline.stop
+        stop
       when Gst::Message::TAG
         message.parse.each do |tag|
           @metadata[tag[0]] = tag[1]
@@ -53,14 +64,15 @@ class Player
         @pipeline.play
         @status = PLAYING
         @loop.run
+        puts "END OF PLAYLIST"
       end
     end
   end
   
   def stop
     @loop.quit
-    @pipeline.stop
     @stop = STOPPED
+    @pipeline.stop
   end
   
   def pause
@@ -73,4 +85,29 @@ class Player
     end
   end
   
+  def next!
+    return false unless @playlist and @current < @playlist.length - 1
+
+    if status == PLAYING
+      stop
+      change_track @current + 1
+      play
+    else
+      @pipeline.stop
+      change_track @current + 1
+    end
+  end
+  
+  def prev!
+    return false unless @playlist and @current > 0
+    
+    if status == PLAYING
+      stop
+      change_track @current - 1
+      play
+    else
+      @pipeline.stop
+      change_track @current - 1
+    end
+  end
 end
