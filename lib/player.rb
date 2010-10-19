@@ -64,7 +64,6 @@ class Player
         @pipeline.play
         @status = PLAYING
         @loop.run
-        puts "END OF PLAYLIST"
       end
     end
   end
