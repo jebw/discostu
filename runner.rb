@@ -9,6 +9,34 @@ p.play
 
 puts "NOW PLAYING"
 
+sleep(2)
+
+puts p.status
+
+p.pause
+
+puts p.status
+
+sleep(3)
+
+puts p.pause
+
+puts p.status
+
+sleep(2)
+
+puts p.status
+
+p.pause
+
+puts p.status
+
+sleep(2)
+
+p.play
+
+puts p.status
+
 sleep(10)
 
 p.stop

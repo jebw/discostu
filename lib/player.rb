@@ -2,9 +2,15 @@ require 'glib2'
 require 'gst'
 
 class Player
-  @metadata = {}
+  NOT_STARTED = 0
+  PLAYING = 1
+  PAUSED = 2
+  STOPPED = 3
   
-  attr_reader :metadata, :error
+  @metadata = {}
+  @status = NOT_STARTED
+  
+  attr_reader :metadata, :error, :status
   
   def initialize(filename = nil)
     change_track filename if filename
@@ -38,20 +44,33 @@ class Player
   end
   
   def play
-    Thread.new do
-      @loop = GLib::MainLoop.new(nil, false)
+    if @status == PAUSED
       @pipeline.play
-      @loop.run
+      @status = PLAYING
+    else
+      Thread.new do
+        @loop = GLib::MainLoop.new(nil, false)
+        @pipeline.play
+        @status = PLAYING
+        @loop.run
+      end
     end
   end
   
   def stop
     @loop.quit
     @pipeline.stop
+    @stop = STOPPED
   end
   
   def pause
-    @pipeline.pause
+    if @status == PAUSED
+      @pipeline.play
+      @status = PLAYING
+    else
+      @pipeline.pause
+      @status = PAUSED
+    end
   end
   
 end
