@@ -1,0 +1,79 @@
+<html>
+	<head>
+		<script type="text/javascript" charset="utf-8" src="prototype.js"></script>
+		<style type="text/css" media="screen">
+			
+		</style>
+		
+		<script type="text/javascript" charset="utf-8">
+			var schedule_update = null ;
+		
+			function nexttrack() {
+				new Ajax.Request('/next', {
+					onSuccess: function(response) {
+						next_update(1) ;
+					},
+					onFailure: function(response) {
+						alert(response.responseText) ;
+					}
+				}) ;
+			}
+			
+			function prevtrack() {
+				new Ajax.Request('/prev', {
+					onSuccess: function(response) {
+						next_update(1) ;
+					},
+					onFailure: function(response) {
+						alert(response.responseText) ;
+					}
+				}) ;
+			}
+			
+			function playpause() {
+				new Ajax.Request('/play', {
+					onSuccess: function(response) {
+						next_update(1) ;
+					},
+					onFailure: function(response) {
+						alert(response.responseText) ;
+					}
+				}) ;
+			}
+			
+			function stopplaying() {
+				new Ajax.Request('/stop', {
+					onSuccess: function() {
+						window.clearTimeout(schedule_update) ;
+					},
+					onFailure: function() {
+						alert(reponse.responseText)
+					}
+				}) ;
+			}
+			
+			function update_albumartist() {
+				new Ajax.Updater('metadata', '/meta', { method:'get' }) ;
+				schedule_update = update_albumartist.delay(10) ;
+			}
+			
+			function next_update(time) {
+				if (schedule_update != null)
+					window.clearTimeout(schedule_update) ;
+				schedule_update = update_albumartist.delay(time) ;
+			}
+		</script>
+	</head>
+	<body onload="next_update(1)">
+		<h1>Disco Stu</h1>
+		
+		<p>
+			<a href="#" onclick="prevtrack()">&laquo; Prev</a> |
+			<a href="#" onclick="playpause()">Play / Pause</a> |
+			<a href="#" onclick="stopplaying()">Stop</a> |
+			<a href="#" onclick="nexttrack()">Next &raquo;</a>
+		</p>
+		
+		<div id="metadata"></div>
+	</body>
+</html>

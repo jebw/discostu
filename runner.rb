@@ -10,38 +10,14 @@ p.play
 
 sleep(5)
 
-p.next!
+p.stop
 
 sleep(5)
-
-p.pause
-
-puts 'PAUSED'
-
-p.next!
-
-puts "SHOULD STILL BE PAUSED"
-sleep(3)
 
 p.play
 
-puts "NOW PLAYING"
-
 sleep(5)
 
-p.prev!
-
-puts "SHOULD BE BACK TO PREVIPOS TRACK"
-
-sleep(10)
-
 p.stop
-
-
-puts "STOPPED PLAYING"
-
-sleep(3)
-
-puts "NOW ENDING"
 
 puts p.metadata.inspect
