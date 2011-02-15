@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'taglib2'
-require 'lib/library'
+require 'library'
 
 class MusicImporter
   
@@ -29,7 +29,7 @@ class MusicImporter
     
     genre = get_genre(tags.genre)
     artist = get_artist(tags.artist)
-    album = get_album(artist, tags.album)
+    album = get_album(artist, tags.album, tags.year)
     
     add_track tags, artist, album, genre
   
@@ -47,9 +47,10 @@ class MusicImporter
     @last_artist = Artist.find_or_create_by_name(artist)
   end
   
-  def get_album(artist, album)
+  def get_album(artist, album, year = nil)
     return @last_album if @last_album && @last_album.artist_id == artist.id && @last_album.name == album
-    @last_album = Album.find_by_artist_id_and_name(artist.id, album) || Album.create(:artist => artist, :name => album)
+    @last_album = Album.find_by_artist_id_and_name(artist.id, album) || 
+                  Album.create(:artist => artist, :name => album, :year => year)
   end
   
   def add_track(tags, artist, album, genre)
@@ -91,9 +92,3 @@ class MusicImporter
 end
 
 class NonExistantMusicRoot < RuntimeError; end
-
-begin
-  MusicImporter.new(File.expand_path(ARGV[0])).import  
-rescue NonExistantMusicRoot
-  puts "Please supply a path to the music"
-end
