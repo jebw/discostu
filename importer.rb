@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'taglib2'
-require 'sqlite3'
+require 'lib/library'
 
 class MusicImporter
   
@@ -27,70 +27,57 @@ class MusicImporter
     
     puts "IMPORTING #{tags.artist}/#{tags.album} - #{tags.title}"
     
-    genre_id = get_genre(tags.genre)
-    artist_id = get_artist(tags.artist)
-    album_id = get_album(artist_id, tags.album)
+    genre = get_genre(tags.genre)
+    artist = get_artist(tags.artist)
+    album = get_album(artist, tags.album)
     
-    add_track tags, artist_id, album_id, genre_id
+    add_track tags, artist, album, genre
+  
+  rescue TagLib2::BadFile
+    puts "UNABLE TO READ TAGS FROM '#{file}'"
   end
   
   def get_genre(genre)
-    return @last_genre[0] if @last_genre && genre == @last_genre[1]
-    
-    if genre_id = @db.get_first_value("SELECT id FROM genres WHERE genre = ?", genre)
-      @last_genre = [ genre_id, genre ]
-    else
-      @db.execute "INSERT INTO genres (genre) VALUES (?)", genre
-      @last_genre = [ @db.last_insert_row_id, genre ]
-    end
-    @last_genre[0]
+    return @last_genre if @last_genre && genre == @last_genre.name
+    @last_genre = Genre.find_or_create_by_name(genre)
   end
   
   def get_artist(artist)
-    return @last_artist[0] if @last_artist && @last_artist[1] == artist
-    
-    if artist_id = @db.get_first_value("SELECT id FROM artists WHERE artist = ?", artist)
-      @last_artist = [ artist_id, artist ]
-    else
-      @db.execute "INSERT INTO artists (artist) VALUES (?)", artist
-      @last_artist = [ @db.last_insert_row_id, artist ]
-    end
-    @last_artist[0]
+    return @last_artist if @last_artist && @last_artist.name == artist
+    @last_artist = Artist.find_or_create_by_name(artist)
   end
   
-  def get_album(artist_id, album)
-    return @last_album[0] if @last_album && @last_album[1] == artist_id && @last_album[2] == album
-    
-    if album_id = @db.get_first_value("SELECT id FROM albums WHERE artist_id = ? AND album = ?", artist_id, album)
-      @last_album = [ album_id, artist_id, album ]
-    else
-      @db.execute "INSERT INTO albums (artist_id, album) VALUES (?, ?)", artist_id, album
-      @last_album = [ @db.last_insert_row_id, artist_id, album ]
-    end
-    @last_album[0]
+  def get_album(artist, album)
+    return @last_album if @last_album && @last_album.artist_id == artist.id && @last_album.name == album
+    @last_album = Album.find_by_artist_id_and_name(artist.id, album) || Album.create(:artist => artist, :name => album)
   end
   
-  def add_track(tags, artist_id, album_id, genre_id)
-    sql = "INSERT INTO tracks (track_number, artist_id, album_id, title, genre_id, length) "
-    sql << "VALUES (?, ?, ?, ?, ?, ?)"
-    @db.execute sql, tags.track, artist_id, album_id, tags.title, genre_id, tags.length
+  def add_track(tags, artist, album, genre)
+    t = Track.create! :artist => artist, :album => album, :genre => genre, :track_no => tags.track, 
+                      :title => tags.title, :length => tags.length
+  rescue ActiveRecord::RecordInvalid
+    puts "COULD NOT INSERT #{t.inspect}"
   end
 
   def truncate_tables
-    @db.execute("DELETE FROM artists")
-    @db.execute("DELETE FROM albums")
-    @db.execute("DELETE FROM genres")
-    @db.execute("DELETE FROM tracks")
+    db_execute("DELETE FROM artists")
+    db_execute("DELETE FROM albums")
+    db_execute("DELETE FROM genres")
+    db_execute("DELETE FROM tracks")
   end
   
   def import
-    connect_to_db
     truncate_tables
     process_dir(@root)
   end
-  
-  def connect_to_db
-    @db = SQLite3::Database.new('db/music.sqlite3')
+    
+  def db_execute(*params)
+    ActiveRecord::Base.connection.execute *params
+  rescue SQLite3::SQLException
+    puts "ERROR IMPORTING - UNKNOWN WHY"
+#    puts "RESCUING AND RETRYING"
+#    @db = SQLite3::Database.new File.expand_path('db/music.sqlite3')
+#    @db.execute *params
   end
   
   def albums
