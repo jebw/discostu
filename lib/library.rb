@@ -67,7 +67,7 @@ class Genre < ActiveRecord::Base
 end
 
 class PlaylistItem < ActiveRecord::Base
-  validates_presence_of :track
-  belongs_to :track
+  validates_presence_of :track_id
+  belongs_to :track_id
   default_scope :order => :position
 end

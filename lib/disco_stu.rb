@@ -3,6 +3,8 @@ require 'sinatra/base'
 require 'player'
 require 'library'
 
+ActiveRecord::Base.include_root_in_json = false
+
 class DiscoStu < Sinatra::Base
   VERSION = '0.0.1'
   
@@ -25,7 +27,7 @@ class DiscoStu < Sinatra::Base
     ""
   end
   
-  post '/next' do
+  post '/player/next' do
     if @@player
       @@player.next!
       "Skipped Forwards"
@@ -34,7 +36,7 @@ class DiscoStu < Sinatra::Base
     end
   end
   
-  post '/prev' do
+  post '/player/prev' do
     if @@player
       @@player.prev!
       "Skipped Backwards"
@@ -76,6 +78,35 @@ class DiscoStu < Sinatra::Base
   get '/tracks' do
     content_type :json
     Track.search(params).to_json
+  end
+  
+  get '/tracks/:track_id' do
+    content_type :json
+    Track.find(params[:track_id]).to_json
+  end
+  
+  post '/playlist_items' do
+    PlaylistItem.create :track_id => params[:track_id]
+  end
+  
+  get '/playlist_items' do
+    PlaylistItem.all.to_json
+  end
+  
+  get '/playlist_items/current' do
+    PlaylistItem.first(:current => true).to_json
+  end
+  
+  delete '/playlist_items/:id' do
+    PlaylistItem.destroy params[:id]
+  end
+  
+  put '/playlist_items' do # Used for reordering
+    # FIXME
+  end
+  
+  delete '/playlist_items' do
+    PlaylistItem.destroy_all
   end
   
   def self.run!(options={})
