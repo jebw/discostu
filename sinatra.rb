@@ -1,8 +1,12 @@
+$:.unshift(File.expand_path('lib', File.dirname(__FILE__)))
 require 'rubygems'
 require 'sinatra/base'
-require 'lib/player.rb'
+require 'player'
+require 'library'
 
 class DiscoStu < Sinatra::Base
+  VERSION = '0.0.1'
+  
   set :static, true
   set :public, File.dirname(__FILE__) + '/static'
   
@@ -55,23 +59,43 @@ class DiscoStu < Sinatra::Base
     end
   end
   
+  get '/albums' do
+    content_type :json
+    Album.search(params).to_json
+  end
+  
+  get '/artists' do
+    content_type :json
+    Artist.search(params).to_json
+  end
+  
+  get '/genres' do
+    content_type :json
+    Genre.search(params).to_json
+  end
+  
+  get '/tracks' do
+    content_type :json
+    Track.search(params).to_json
+  end
+  
   def self.run!(options={})
     set options
     handler      = detect_rack_handler
     handler_name = handler.name.gsub(/.*::/, '')
-    puts "== Sinatra/#{Sinatra::VERSION} has taken the stage " +
+    puts "== Disco Stu (#{DiscoStu::VERSION}) has taken the to the dance floor " +
       "on #{port} for #{environment} with backup from #{handler_name}" unless handler_name =~/cgi/i
     handler.run self, :Host => bind, :Port => port do |server|
       trap(:INT) do
         ## Use thins' hard #stop! if available, otherwise just #stop
-        @@player.stop
+        @@player && @@player.stop
         server.respond_to?(:stop!) ? server.stop! : server.stop
-        puts "\n== Sinatra has ended his set (crowd applauds)" unless handler_name =~/cgi/i
+        puts "\n== Disco Stu has finished rocking the dance floor" unless handler_name =~/cgi/i
       end
       set :running, true
     end
   rescue Errno::EADDRINUSE => e
-    puts "== Someone is already performing on port #{port}!"
+    puts "== Someone is already dancing on port #{port}!"
   end
   
 end
