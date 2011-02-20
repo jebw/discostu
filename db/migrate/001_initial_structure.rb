@@ -19,6 +19,7 @@ class InitialStructure < ActiveRecord::Migration
       t.integer :playcount
       t.integer :artist_id
       t.integer :album_id
+      t.string :filename
     end
     
     create_table 'genres', :force => true do |t|

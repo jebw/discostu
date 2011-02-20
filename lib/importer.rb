@@ -31,7 +31,7 @@ class MusicImporter
     artist = get_artist(tags.artist)
     album = get_album(artist, tags.album, tags.year)
     
-    add_track tags, artist, album, genre
+    add_track tags, artist, album, genre, file
   
   rescue TagLib2::BadFile
     puts "UNABLE TO READ TAGS FROM '#{file}'"
@@ -53,9 +53,9 @@ class MusicImporter
                   Album.create(:artist => artist, :name => album, :year => year)
   end
   
-  def add_track(tags, artist, album, genre)
+  def add_track(tags, artist, album, genre, filename)
     t = Track.create! :artist => artist, :album => album, :genre => genre, :track_no => tags.track, 
-                      :title => tags.title, :length => tags.length
+                      :title => tags.title, :length => tags.length, :filename => filename
   rescue ActiveRecord::RecordInvalid
     puts "COULD NOT INSERT #{t.inspect}"
   end

@@ -9,7 +9,7 @@ class DiscoStu < Sinatra::Base
   VERSION = '0.0.1'
   
   set :static, true
-  set :public, File.dirname(__FILE__) + '/static'
+  set :root, File.expand_path('..', File.dirname(__FILE__))
   
   @@player = nil
   
