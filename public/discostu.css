@@ -1,0 +1,28 @@
+.coverart {
+	width: 100px;
+	height: 100px;
+	background: #dedede;
+	margin: 8px auto;
+}
+
+.album {
+	width: 200px;
+	height: 200px;
+	text-align: center;
+	float: left;
+	margin-right: 20px;
+}
+
+#library > div {
+	width: 33%;
+	border: 1px solid black;
+	display: inline-block;
+	height: 40%;
+	display: none;
+}
+
+#playlist {
+	height: 40%;
+	border: 1px solid black;
+	display: none;
+}

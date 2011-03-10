@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra/base'
+#require "sinatra/reloader"
 require 'player'
 require 'library'
 
@@ -18,10 +19,7 @@ class DiscoStu < Sinatra::Base
       @@player.pause
     else
       @@player = Player.new
-      @@player.playlist = [ '../tracks/01.mp3', '../tracks/02.mp3', '../tracks/03.mp3', '../tracks/04.mp3',
-                            '../tracks/05.mp3', '../tracks/06.mp3', '../tracks/07.mp3', '../tracks/08.mp3',
-                            '../tracks/09.mp3', '../tracks/10.mp3', '../tracks/11.mp3' ]
-      @@player.change_track 0
+      @@player.change_track PlaylistItem.first
       @@player.play
     end
     ""
@@ -86,7 +84,9 @@ class DiscoStu < Sinatra::Base
   end
   
   post '/playlist_items' do
-    PlaylistItem.create :track_id => params[:track_id]
+    PlaylistItem.create_multiple :track_id => params[:track_id].to_s.split(',') if params[:track_id]
+    PlaylistItem.add_album(params[:album_id]) if params[:album_id]
+    nil
   end
   
   get '/playlist_items' do
@@ -113,14 +113,14 @@ class DiscoStu < Sinatra::Base
     set options
     handler      = detect_rack_handler
     handler_name = handler.name.gsub(/.*::/, '')
-    puts "== Disco Stu (#{DiscoStu::VERSION}) has taken the to the dance floor " +
+    puts "== Disco Stu (#{DiscoStu::VERSION}) has hit the dance floor " +
       "on #{port} for #{environment} with backup from #{handler_name}" unless handler_name =~/cgi/i
     handler.run self, :Host => bind, :Port => port do |server|
       trap(:INT) do
         ## Use thins' hard #stop! if available, otherwise just #stop
         @@player && @@player.stop
         server.respond_to?(:stop!) ? server.stop! : server.stop
-        puts "\n== Disco Stu has finished rocking the dance floor" unless handler_name =~/cgi/i
+        puts "\n== Disco Stu has rocked the dance floor" unless handler_name =~/cgi/i
       end
       set :running, true
     end

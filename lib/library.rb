@@ -1,13 +1,16 @@
 require 'rubygems'
 require 'active_record'
+require 'acts_as_list'
+ActiveRecord::Base.class_eval { include ActiveRecord::Acts::List }
 
 begin
   ActiveRecord::Base.connection
 rescue ActiveRecord::ConnectionNotEstablished 
   dbpath = File.expand_path File.join(File.dirname(__FILE__), '..', 'db', 'music.sqlite3')
-  ActiveRecord::Base.establish_connection :adapter => 'sqlite3', 
-                                          :database => dbpath, 
-                                          :encoding => 'utf8'
+#  ActiveRecord::Base.establish_connection :adapter => 'sqlite3', 
+#                                          :database => dbpath, 
+#                                          :encoding => 'utf8'
+  ActiveRecord::Base.establish_connection :adapter => 'mysql', :database => 'disco_stu', :username => 'jebw', :password => '', :host => 'localhost'
 end
 
 ActiveRecord::Migration.verbose = true
@@ -67,7 +70,21 @@ class Genre < ActiveRecord::Base
 end
 
 class PlaylistItem < ActiveRecord::Base
-  validates_presence_of :track_id
-  belongs_to :track_id
+  acts_as_list
+  
+  validates_presence_of :track
+  belongs_to :track
   default_scope :order => :position
+  
+  class << self
+  
+    def create_multiple(track_ids)
+      track_ids.each { |t_id| create :track_id => t_id }
+    end
+  
+    def add_album(album_id)
+      Track.find_all_by_album_id(album_id).each {|track| create :track => track }
+    end
+    
+  end
 end

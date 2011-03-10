@@ -10,7 +10,6 @@ class Player
   @metadata = {}
   @status = NOT_STARTED
   
-  @playlist = []
   @current = nil
   
   attr_reader :metadata, :error, :status, :current
@@ -21,23 +20,21 @@ class Player
   end
   
   def change_track(playlist_item)
-    return false unless playlist_item >= 0 and playlist_item < @playlist.length
-    
     @error = nil
     @metadata = {}
     @current = playlist_item
     
     @pipeline = Gst::Pipeline.new
     playbin = Gst::ElementFactory.make('playbin')
-    playbin.uri = "file://#{File.expand_path(@playlist[@current])}"
+    playbin.uri = "file://#{File.expand_path(@current.track.filename)}"
     @pipeline.add playbin
     
     @pipeline.bus.add_watch do |bus, message|
       case message.type
       when Gst::Message::EOS
-        if @current < @playlist.length - 1
+        if @current < Playlist.max(:position) - 1
           @pipeline.stop
-          change_track @current + 1
+          change_track @current.lower_item
           @pipeline.play
         else
           stop
@@ -52,6 +49,8 @@ class Player
       end
       true
     end
+    rescue ActiveRecord::RecordNotFound
+      # Fails silently
   end
   
   def play
@@ -85,28 +84,28 @@ class Player
   end
   
   def next!
-    return false unless @playlist and @current < @playlist.length - 1
+    return false unless next_track = @current.lower_item
 
     if status == PLAYING
       stop
-      change_track @current + 1
+      change_track next_track
       play
     else
       @pipeline.stop
-      change_track @current + 1
+      change_track next_track
     end
   end
   
   def prev!
-    return false unless @playlist and @current > 0
+    return false unless prev_track = @current.higher_item
     
     if status == PLAYING
       stop
-      change_track @current - 1
+      change_track prev_track
       play
     else
       @pipeline.stop
-      change_track @current - 1
+      change_track prev_track
     end
   end
 end

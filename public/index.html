@@ -1,0 +1,44 @@
+<html>
+	<head>
+		<title>Disco Stu</title>
+		<script type="text/javascript" charset="utf-8" src="prototype.js"></script>
+		<script type="text/javascript" charset="utf-8" src="discostu.js"></script>
+		<link rel="stylesheet" href="discostu.css" type="text/css" media="screen" charset="utf-8" />
+		
+		<script type="text/javascript" charset="utf-8">
+			var schedule_update = null ;
+		</script>
+	</head>
+	<body onload="next_update(1); list_albums()">
+		<h1>Disco Stu</h1>
+		
+		<p>
+			<a href="#" onclick="prevtrack()">&laquo; Prev</a> |
+			<a href="#" onclick="playpause()">Play / Pause</a> |
+			<a href="#" onclick="stopplaying()">Stop</a> |
+			<a href="#" onclick="nexttrack()">Next &raquo;</a>
+		</p>
+		
+		<div id="metadata"></div>
+		
+		
+		<div id="library">
+			<div id="artist_list"></div>
+			<div id="album_list"></div>
+			<div id="track_list"></div>
+		</div>
+		
+		<div id="playlist"></div>
+		
+		<div id="album_search">
+			<input type="text" name="search" value="search" id="search" onfocus="if (this.value == 'search') this.value = ''" 
+							onblur="if (this.value == '') this.value = 'search'" />
+			<input type="button" name="submit" value="Search" id="submit" onclick="list_albums($('search').value)" />
+		</div>
+		
+		<div id="albums">
+			
+		</div>
+		
+	</body>
+</html>
