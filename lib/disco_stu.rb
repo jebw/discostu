@@ -20,7 +20,7 @@ class DiscoStu < Sinatra::Base
     else
       @@player = Player.new
       @@player.change_track PlaylistItem.first
-      @@player.play
+#      @@player.play
     end
     ""
   end
@@ -52,7 +52,8 @@ class DiscoStu < Sinatra::Base
   
   get '/meta' do
     if @@player
-      "<h2>#{@@player.metadata['artist']} - #{@@player.metadata['album']}</h2><p><em>#{@@player.metadata['title']}</em></p>"
+      "<h2>#{@@player.current.track.track_no}: #{@@player.current.track.title}"
+#      "<h2>#{@@player.metadata['artist']} - #{@@player.metadata['album']}</h2><p><em>#{@@player.metadata['title']}</em></p>"
     else
       ""
     end

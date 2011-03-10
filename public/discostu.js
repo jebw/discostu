@@ -20,7 +20,8 @@ function add_album(album_id) {
 }
 
 function nexttrack() {
-	new Ajax.Request('/next', {
+	new Ajax.Request('/player/next', {
+		method: 'post',
 		onSuccess: function(response) {
 			next_update(1) ;
 		},
@@ -31,7 +32,8 @@ function nexttrack() {
 }
 
 function prevtrack() {
-	new Ajax.Request('/prev', {
+	new Ajax.Request('/player/prev', {
+		method: 'post',
 		onSuccess: function(response) {
 			next_update(1) ;
 		},
@@ -42,7 +44,8 @@ function prevtrack() {
 }
 
 function playpause() {
-	new Ajax.Request('/play', {
+	new Ajax.Request('/player/play', {
+		method: 'post',
 		onSuccess: function(response) {
 			next_update(1) ;
 		},
@@ -53,7 +56,8 @@ function playpause() {
 }
 
 function stopplaying() {
-	new Ajax.Request('/stop', {
+	new Ajax.Request('/player/stop', {
+		method: 'post',
 		onSuccess: function() {
 			window.clearTimeout(schedule_update) ;
 		},
